@@ -5,7 +5,7 @@ import {
   ForbiddenError,
   NotFoundError,
   ConflictError,
-} from '../../src/utils/AppError';
+} from '@/utils/AppError';
 
 describe('AppError', () => {
   it('should create an AppError with correct properties', () => {

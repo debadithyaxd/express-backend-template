@@ -1,7 +1,7 @@
 import rateLimit from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
-import { redis } from '../config/redis';
-import { env } from '../config/env';
+import { redis } from '@/config/redis';
+import { env } from '@/config/env';
 
 const makeStore = () =>
   new RedisStore({

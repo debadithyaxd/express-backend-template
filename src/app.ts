@@ -4,15 +4,15 @@ import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
-import { env } from './config/env';
-import passport from './config/passport';
-import morganMiddleware from './config/morgan';
-import { metricsMiddleware } from './middleware/metricsMiddleware';
-import { apiLimiter } from './middleware/rateLimiter';
-import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { env } from '@/config/env';
+import passport from '@/config/passport';
+import morganMiddleware from '@/config/morgan';
+import { metricsMiddleware } from '@/middleware/metricsMiddleware';
+import { apiLimiter } from '@/middleware/rateLimiter';
+import { errorHandler, notFoundHandler } from '@/middleware/errorHandler';
 
-import apiRoutes from './routes/index';
-import metricsRoutes from './routes/metrics.routes';
+import apiRoutes from '@/routes/index';
+import metricsRoutes from '@/routes/metrics.routes';
 
 export function createApp(): Application {
   const app = express();

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { validate } from '../../src/middleware/validate';
+import { validate } from '@/middleware/validate';
 
 const schema = z.object({
   body: z.object({

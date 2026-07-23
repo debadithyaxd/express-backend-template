@@ -1,4 +1,4 @@
-import { sendSuccess, sendCreated, sendError } from '../../src/utils/apiResponse';
+import { sendSuccess, sendCreated, sendError } from '@/utils/apiResponse';
 
 const mockRes = () => {
   const res: Record<string, jest.Mock> = {};

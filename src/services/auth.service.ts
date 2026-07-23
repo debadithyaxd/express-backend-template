@@ -1,16 +1,16 @@
 import bcrypt from 'bcryptjs';
-import { prisma } from '../config/prisma';
-import { env } from '../config/env';
-import { TokenService } from './token.service';
-import { TokenPair } from '../types';
+import { prisma } from '@/config/prisma';
+import { env } from '@/config/env';
+import { TokenService } from '@/services/token.service';
+import { TokenPair } from '@/types';
 import { AuthProvider, Role } from '@prisma/client';
 import {
   BadRequestError,
   ConflictError,
   NotFoundError,
   UnauthorizedError,
-} from '../utils/AppError';
-import { authLoginCounter } from '../config/metrics';
+} from '@/utils/AppError';
+import { authLoginCounter } from '@/config/metrics';
 
 export class AuthService {
   // ─── Register ───────────────────────────────────────────────────────────────

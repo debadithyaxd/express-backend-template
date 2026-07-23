@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { AuthService } from '../services/auth.service';
-import { TokenPair } from '../types';
-import { AuthenticatedRequest } from '../types';
-import { sendSuccess, sendCreated } from '../utils/apiResponse';
-import { asyncHandler } from '../utils/asyncHandler';
+import { AuthService } from '@/services/auth.service';
+import { TokenPair } from '@/types';
+import { AuthenticatedRequest } from '@/types';
+import { sendSuccess, sendCreated } from '@/utils/apiResponse';
+import { asyncHandler } from '@/utils/asyncHandler';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password } = req.body as { name: string; email: string; password: string };

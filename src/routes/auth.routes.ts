@@ -1,15 +1,15 @@
 import { Router } from 'express';
 import passport from 'passport';
-import * as AuthController from '../controllers/auth.controller';
-import { validate } from '../middleware/validate';
-import { authenticate } from '../middleware/authenticate';
-import { authLimiter } from '../middleware/rateLimiter';
+import * as AuthController from '@/controllers/auth.controller';
+import { validate } from '@/middleware/validate';
+import { authenticate } from '@/middleware/authenticate';
+import { authLimiter } from '@/middleware/rateLimiter';
 import {
   registerSchema,
   loginSchema,
   refreshTokenSchema,
   changePasswordSchema,
-} from '../validators/auth.validator';
+} from '@/validators/auth.validator';
 
 const router = Router();
 

@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { prisma } from '../config/prisma';
-import { env } from '../config/env';
-import { JwtPayload, JwtRefreshPayload, TokenPair } from '../types';
+import { prisma } from '@/config/prisma';
+import { env } from '@/config/env';
+import { JwtPayload, JwtRefreshPayload, TokenPair } from '@/types';
 import { Role } from '@prisma/client';
-import { UnauthorizedError } from '../utils/AppError';
+import { UnauthorizedError } from '@/utils/AppError';
 
 export class TokenService {
   /**

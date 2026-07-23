@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import passport from 'passport';
 import { Role } from '@prisma/client';
-import { AuthenticatedRequest } from '../types';
-import { ForbiddenError, UnauthorizedError } from '../utils/AppError';
+import { AuthenticatedRequest } from '@/types';
+import { ForbiddenError, UnauthorizedError } from '@/utils/AppError';
 
 /**
  * Requires a valid JWT access token.

@@ -1,7 +1,7 @@
 import request from 'supertest';
-import { createApp } from '../../src/app';
-import { prisma } from '../../src/config/prisma';
-import { redis } from '../../src/config/redis';
+import { createApp } from '@/app';
+import { prisma } from '@/config/prisma';
+import { redis } from '@/config/redis';
 
 const app = createApp();
 

@@ -2,10 +2,10 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { AuthProvider } from '@prisma/client';
-import { env } from './env';
-import { prisma } from './prisma';
-import { AuthService } from '../services/auth.service';
-import { JwtPayload } from '../types';
+import { env } from '@/config/env';
+import { prisma } from '@/config/prisma';
+import { AuthService } from '@/services/auth.service';
+import { JwtPayload } from '@/types';
 
 // ─── JWT Strategy ─────────────────────────────────────────────────────────────
 passport.use(

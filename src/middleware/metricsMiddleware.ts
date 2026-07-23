@@ -4,7 +4,7 @@ import {
   httpRequestDuration,
   httpRequestSizeBytes,
   httpResponseSizeBytes,
-} from '../config/metrics';
+} from '@/config/metrics';
 
 export const metricsMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const start = process.hrtime.bigint();
