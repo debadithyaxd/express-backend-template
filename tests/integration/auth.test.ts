@@ -1,19 +1,31 @@
-import request from 'supertest';
 import { createApp } from '@/app';
 import { prisma } from '@/config/prisma';
 import { redis } from '@/config/redis';
+import request from 'supertest';
 
 const app = createApp();
 
 beforeAll(async () => {
-  await prisma.$connect();
+  try {
+    await prisma.$connect();
+  } catch (e) {
+    console.warn('Postgres connection failed in test:', (e as Error).message);
+  }
 });
 
 afterAll(async () => {
-  await prisma.refreshToken.deleteMany();
-  await prisma.user.deleteMany({ where: { email: 'jest@example.com' } });
-  await prisma.$disconnect();
-  await redis.quit();
+  try {
+    await prisma.refreshToken.deleteMany();
+    await prisma.user.deleteMany({ where: { email: 'jest@example.com' } });
+    await prisma.$disconnect();
+  } catch {
+    // Ignore teardown errors if database was not connected
+  }
+  try {
+    await redis.quit();
+  } catch {
+    // Ignore redis teardown errors
+  }
 });
 
 describe('POST /api/v1/auth/register', () => {

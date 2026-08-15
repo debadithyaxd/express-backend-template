@@ -1,6 +1,6 @@
-import morgan, { StreamOptions } from 'morgan';
 import { env } from '@/config/env';
 import { logger } from '@/utils/logger';
+import morgan, { type StreamOptions } from 'morgan';
 
 // Pipe Morgan HTTP logs into Winston
 const stream: StreamOptions = {

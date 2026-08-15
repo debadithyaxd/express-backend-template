@@ -1,10 +1,8 @@
-import { createApp } from './app';
-import { env } from './config/env';
-import { connectDB, disconnectDB } from './config/prisma';
-import { connectRedis, disconnectRedis } from './config/redis';
-import { logger } from './utils/logger';
-
-const app = createApp();
+import { createApp } from '@/app';
+import { env } from '@/config/env';
+import { connectDB, disconnectDB } from '@/config/prisma';
+import { connectRedis, disconnectRedis } from '@/config/redis';
+import { logger } from '@/utils/logger';
 
 async function bootstrap(): Promise<void> {
   try {
@@ -16,6 +14,8 @@ async function bootstrap(): Promise<void> {
     await connectRedis();
     logger.info('Redis connected');
 
+    const app = createApp();
+
     const server = app.listen(env.PORT, () => {
       logger.info(`🚀 Server running on port ${env.PORT} [${env.NODE_ENV}]`);
       logger.info(`📡 API available at http://localhost:${env.PORT}${env.API_PREFIX}`);
@@ -23,23 +23,36 @@ async function bootstrap(): Promise<void> {
     });
 
     // ─── Graceful Shutdown ─────────────────────────────────────────────────────
+    let isShuttingDown = false;
     const shutdown = async (signal: string) => {
+      if (isShuttingDown) return;
+      isShuttingDown = true;
+
       logger.info(`${signal} received — shutting down gracefully`);
 
-      server.close(async () => {
-        logger.info('HTTP server closed');
-        await disconnectDB();
-        logger.info('Database disconnected');
-        await disconnectRedis();
-        logger.info('Redis disconnected');
-        process.exit(0);
-      });
-
       // Force kill after 10s
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         logger.error('Forced shutdown after timeout');
         process.exit(1);
       }, 10_000);
+      timer.unref();
+
+      server.close(async () => {
+        logger.info('HTTP server closed');
+        try {
+          await disconnectDB();
+          logger.info('Database disconnected');
+        } catch (dbErr) {
+          logger.error('Error disconnecting database', { error: (dbErr as Error).message });
+        }
+        try {
+          await disconnectRedis();
+          logger.info('Redis disconnected');
+        } catch (redisErr) {
+          logger.error('Error disconnecting Redis', { error: (redisErr as Error).message });
+        }
+        process.exit(0);
+      });
     };
 
     process.on('SIGTERM', () => void shutdown('SIGTERM'));
@@ -51,7 +64,9 @@ async function bootstrap(): Promise<void> {
     });
 
     process.on('unhandledRejection', (reason) => {
-      logger.error('Unhandled Rejection', { reason });
+      const message = reason instanceof Error ? reason.message : String(reason);
+      const stack = reason instanceof Error ? reason.stack : undefined;
+      logger.error('Unhandled Rejection', { error: message, stack });
       process.exit(1);
     });
   } catch (err) {

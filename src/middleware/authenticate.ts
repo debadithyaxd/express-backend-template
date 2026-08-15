@@ -1,8 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import passport from 'passport';
-import { Role } from '@prisma/client';
-import { AuthenticatedRequest } from '@/types';
+import type { AuthenticatedRequest } from '@/types';
 import { ForbiddenError, UnauthorizedError } from '@/utils/AppError';
+import type { Role } from '@prisma/client';
+import type { NextFunction, Request, Response } from 'express';
+import passport from 'passport';
 
 /**
  * Requires a valid JWT access token.
@@ -13,8 +13,14 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     'jwt',
     { session: false },
     (err: Error | null, user: AuthenticatedRequest['user'] | false) => {
-      if (err) return next(err);
-      if (!user) return next(new UnauthorizedError('Authentication required'));
+      if (err) {
+        next(err);
+        return;
+      }
+      if (!user) {
+        next(new UnauthorizedError('Authentication required'));
+        return;
+      }
       (req as AuthenticatedRequest).user = user;
       next();
     },
@@ -29,9 +35,13 @@ export const authorize =
   (...roles: Role[]) =>
   (req: Request, _res: Response, next: NextFunction): void => {
     const user = (req as AuthenticatedRequest).user;
-    if (!user) return next(new UnauthorizedError('Authentication required'));
+    if (!user) {
+      next(new UnauthorizedError('Authentication required'));
+      return;
+    }
     if (!roles.includes(user.role)) {
-      return next(new ForbiddenError('You do not have permission to access this resource'));
+      next(new ForbiddenError('You do not have permission to access this resource'));
+      return;
     }
     next();
   };

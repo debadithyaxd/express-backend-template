@@ -1,15 +1,15 @@
-import express, { Application } from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import express, { type Application } from 'express';
+import helmet from 'helmet';
 
 import { env } from '@/config/env';
-import passport from '@/config/passport';
 import morganMiddleware from '@/config/morgan';
+import passport from '@/config/passport';
+import { errorHandler, notFoundHandler } from '@/middleware/errorHandler';
 import { metricsMiddleware } from '@/middleware/metricsMiddleware';
 import { apiLimiter } from '@/middleware/rateLimiter';
-import { errorHandler, notFoundHandler } from '@/middleware/errorHandler';
 
 import apiRoutes from '@/routes/index';
 import metricsRoutes from '@/routes/metrics.routes';
@@ -17,7 +17,7 @@ import metricsRoutes from '@/routes/metrics.routes';
 export function createApp(): Application {
   const app = express();
 
-  // ─── Security ───────────────────────────────────────────────────────────────
+  // ─── Security  ────
   app.use(helmet());
   app.use(
     cors({
@@ -28,25 +28,25 @@ export function createApp(): Application {
     }),
   );
 
-  // ─── Body Parsing ───────────────────────────────────────────────────────────
+  // ─── Body Parsing
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use(cookieParser());
   app.use(compression());
 
-  // ─── Logging ────────────────────────────────────────────────────────────────
+  // ─── Logging  ─────
   app.use(morganMiddleware);
 
-  // ─── Metrics ────────────────────────────────────────────────────────────────
+  // ─── Metrics  ─────
   app.use(metricsMiddleware);
 
-  // ─── Auth ───────────────────────────────────────────────────────────────────
+  // ─── Auth  ────────
   app.use(passport.initialize());
 
   // ─── Rate Limiting ──────────────────────────────────────────────────────────
   app.use(env.API_PREFIX, apiLimiter);
 
-  // ─── Routes ─────────────────────────────────────────────────────────────────
+  // ─── Routes  ──────
   app.use(env.API_PREFIX, apiRoutes);
   app.use('/metrics', metricsRoutes); // Prometheus scrape endpoint
 

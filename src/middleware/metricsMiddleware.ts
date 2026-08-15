@@ -1,25 +1,27 @@
-import { Request, Response, NextFunction } from 'express';
 import {
   httpRequestCounter,
   httpRequestDuration,
   httpRequestSizeBytes,
   httpResponseSizeBytes,
 } from '@/config/metrics';
+import type { NextFunction, Request, Response } from 'express';
 
 export const metricsMiddleware = (req: Request, res: Response, next: NextFunction): void => {
   const start = process.hrtime.bigint();
 
   // Track request size
-  const reqSize = parseInt(req.headers['content-length'] ?? '0', 10);
+  const reqSize = Number.parseInt(req.headers['content-length'] ?? '0', 10);
 
   res.on('finish', () => {
     const end = process.hrtime.bigint();
     const durationSeconds = Number(end - start) / 1e9;
 
-    // Normalize route (use matched route pattern, not raw path)
+    // Normalize route (use matched route pattern, avoid high-cardinality for unmatched paths)
     const route = req.route?.path
       ? `${req.baseUrl ?? ''}${req.route.path}`
-      : req.path;
+      : res.statusCode === 404
+        ? 'unmatched'
+        : req.path;
 
     const labels = {
       method: req.method,
@@ -34,7 +36,8 @@ export const metricsMiddleware = (req: Request, res: Response, next: NextFunctio
       httpRequestSizeBytes.observe({ method: req.method, route }, reqSize);
     }
 
-    const resSize = parseInt(res.getHeader('content-length') as string ?? '0', 10);
+    const rawResSize = res.getHeader('content-length');
+    const resSize = rawResSize ? Number.parseInt(String(rawResSize), 10) : 0;
     if (resSize > 0) {
       httpResponseSizeBytes.observe({ method: req.method, route }, resSize);
     }

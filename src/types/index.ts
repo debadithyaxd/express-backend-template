@@ -1,8 +1,8 @@
-import { Request } from 'express';
-import { Role } from '@prisma/client';
+import type { Role } from '@prisma/client';
+import type { Request } from 'express';
 
 export interface JwtPayload {
-  sub: string;       // user id
+  sub: string; // user id
   email: string;
   role: Role;
   iat?: number;
@@ -10,8 +10,8 @@ export interface JwtPayload {
 }
 
 export interface JwtRefreshPayload {
-  sub: string;       // user id
-  tokenId: string;   // refresh token record id
+  sub: string; // user id
+  tokenId: string; // refresh token record id
   iat?: number;
   exp?: number;
 }

@@ -1,6 +1,6 @@
-import { Router, Request, Response } from 'express';
-import { register } from '@/config/metrics';
 import { env } from '@/config/env';
+import { register } from '@/config/metrics';
+import { type Request, type Response, Router } from 'express';
 
 const router = Router();
 

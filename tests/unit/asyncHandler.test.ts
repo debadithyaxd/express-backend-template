@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
 import { asyncHandler } from '@/utils/asyncHandler';
+import type { NextFunction, Request, Response } from 'express';
 
 const mockReq = {} as Request;
 const mockRes = {} as Response;

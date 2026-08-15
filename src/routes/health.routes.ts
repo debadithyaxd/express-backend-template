@@ -1,6 +1,6 @@
-import { Router, Request, Response } from 'express';
 import { prisma } from '@/config/prisma';
 import { redis } from '@/config/redis';
+import { type Request, type Response, Router } from 'express';
 
 const router = Router();
 

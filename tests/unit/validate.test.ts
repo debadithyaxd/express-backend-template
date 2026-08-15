@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
 import { validate } from '@/middleware/validate';
+import type { NextFunction, Request, Response } from 'express';
+import { z } from 'zod';
 
 const schema = z.object({
   body: z.object({
@@ -33,7 +33,6 @@ describe('validate middleware', () => {
     await validate(schema)(req as Request, res, mockNext);
     expect(mockNext).toHaveBeenCalledWith();
   });
-
   it('returns 422 when body is invalid', async () => {
     const req = mockReq({ email: 'not-an-email', password: '123' });
     const res = mockRes();
@@ -43,5 +42,20 @@ describe('validate middleware', () => {
       expect.objectContaining({ success: false, message: 'Validation failed' }),
     );
     expect(mockNext).not.toHaveBeenCalled();
+  });
+
+  it('assigns parsed and coerced values back to req.body', async () => {
+    const transformSchema = z.object({
+      body: z.object({
+        count: z.coerce.number(),
+        email: z.string().toLowerCase(),
+      }),
+    });
+    const req = mockReq({ count: '42', email: 'USER@EXAMPLE.COM' });
+    const res = mockRes();
+    await validate(transformSchema)(req as Request, res, mockNext);
+    expect(mockNext).toHaveBeenCalledWith();
+    expect((req.body as { count: number; email: string }).count).toBe(42);
+    expect((req.body as { count: number; email: string }).email).toBe('user@example.com');
   });
 });

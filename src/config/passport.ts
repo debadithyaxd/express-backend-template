@@ -1,13 +1,13 @@
-import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import { AuthProvider } from '@prisma/client';
 import { env } from '@/config/env';
 import { prisma } from '@/config/prisma';
 import { AuthService } from '@/services/auth.service';
-import { JwtPayload } from '@/types';
+import type { JwtPayload } from '@/types';
+import { AuthProvider } from '@prisma/client';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 
-// ─── JWT Strategy ─────────────────────────────────────────────────────────────
+// ─── JWT Strategy  ──
 passport.use(
   new JwtStrategy(
     {
@@ -31,34 +31,36 @@ passport.use(
 );
 
 // ─── Google OAuth2 Strategy ───────────────────────────────────────────────────
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-      callbackURL: env.GOOGLE_CALLBACK_URL,
-      scope: ['profile', 'email'],
-    },
-    async (_accessToken, _refreshToken, profile, done) => {
-      try {
-        const email = profile.emails?.[0]?.value;
-        if (!email) return done(new Error('No email returned from Google'), false);
+if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+        callbackURL: env.GOOGLE_CALLBACK_URL,
+        scope: ['profile', 'email'],
+      },
+      async (_accessToken, _refreshToken, profile, done) => {
+        try {
+          const email = profile.emails?.[0]?.value;
+          if (!email) return done(new Error('No email returned from Google'), false);
 
-        const { user, tokens } = await AuthService.oauthUpsert({
-          providerId: profile.id,
-          provider: AuthProvider.GOOGLE,
-          email,
-          name: profile.displayName,
-          avatarUrl: profile.photos?.[0]?.value,
-        });
+          const { user, tokens } = await AuthService.oauthUpsert({
+            providerId: profile.id,
+            provider: AuthProvider.GOOGLE,
+            email,
+            name: profile.displayName,
+            avatarUrl: profile.photos?.[0]?.value,
+          });
 
-        // Pass both user and tokens through to the callback
-        return done(null, { user, tokens } as unknown as Express.User);
-      } catch (err) {
-        return done(err as Error, false);
-      }
-    },
-  ),
-);
+          // Pass both user and tokens through to the callback
+          return done(null, { user, tokens } as unknown as Express.User);
+        } catch (err) {
+          return done(err as Error, false);
+        }
+      },
+    ),
+  );
+}
 
 export default passport;

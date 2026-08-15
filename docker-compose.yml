@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  # ─── App ──────────────────────────────────────────────────────────────────
+  # App
   app:
     build:
       context: .
@@ -23,7 +23,7 @@ services:
     networks:
       - backend
 
-  # ─── PostgreSQL ───────────────────────────────────────────────────────────
+  # PostgreSQL  
   postgres:
     image: postgres:16-alpine
     container_name: express_postgres
@@ -44,9 +44,9 @@ services:
     networks:
       - backend
 
-  # ─── Redis ────────────────────────────────────────────────────────────────
+  # Redis 
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: express_redis
     restart: unless-stopped
     command: redis-server --appendonly yes
@@ -62,7 +62,7 @@ services:
     networks:
       - backend
 
-  # ─── Prometheus ───────────────────────────────────────────────────────────
+  # ─── Prometheus  
   prometheus:
     image: prom/prometheus:latest
     container_name: express_prometheus
@@ -80,7 +80,7 @@ services:
     networks:
       - backend
 
-  # ─── Grafana ──────────────────────────────────────────────────────────────
+  # ─── Grafana
   grafana:
     image: grafana/grafana:latest
     container_name: express_grafana

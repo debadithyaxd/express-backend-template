@@ -1,6 +1,6 @@
-import Redis from 'ioredis';
 import { env } from '@/config/env';
 import { logger } from '@/utils/logger';
+import Redis from 'ioredis';
 
 export const redis = new Redis(env.REDIS_URL, {
   maxRetriesPerRequest: 3,
@@ -21,9 +21,19 @@ redis.on('close', () => logger.warn('Redis: connection closed'));
 redis.on('reconnecting', () => logger.info('Redis: reconnecting...'));
 
 export async function connectRedis(): Promise<void> {
-  await redis.connect();
+  if (redis.status === 'ready' || redis.status === 'connect') {
+    return;
+  }
+  if (redis.status === 'wait') {
+    await redis.connect();
+    return;
+  }
+  // If already connecting or reconnecting, ping to ensure readiness
+  await redis.ping();
 }
 
 export async function disconnectRedis(): Promise<void> {
-  await redis.quit();
+  if (redis.status !== 'end' && redis.status !== 'close') {
+    await redis.quit();
+  }
 }

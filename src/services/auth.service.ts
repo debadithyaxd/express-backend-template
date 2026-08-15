@@ -1,19 +1,14 @@
-import bcrypt from 'bcryptjs';
-import { prisma } from '@/config/prisma';
 import { env } from '@/config/env';
-import { TokenService } from '@/services/token.service';
-import { TokenPair } from '@/types';
-import { AuthProvider, Role } from '@prisma/client';
-import {
-  BadRequestError,
-  ConflictError,
-  NotFoundError,
-  UnauthorizedError,
-} from '@/utils/AppError';
 import { authLoginCounter } from '@/config/metrics';
+import { prisma } from '@/config/prisma';
+import { TokenService } from '@/services/token.service';
+import type { TokenPair } from '@/types';
+import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from '@/utils/AppError';
+import { AuthProvider, type Role } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 export class AuthService {
-  // ─── Register ───────────────────────────────────────────────────────────────
+  // ─── Register  ────
 
   static async register(
     name: string,
@@ -36,7 +31,7 @@ export class AuthService {
     return { user: toSafeUser(user), tokens };
   }
 
-  // ─── Login ──────────────────────────────────────────────────────────────────
+  // ─── Login  ───────
 
   static async login(
     email: string,
@@ -51,6 +46,7 @@ export class AuthService {
     }
 
     if (!user.isActive) {
+      authLoginCounter.inc({ provider: 'local', success: 'false' });
       throw new UnauthorizedError('Your account has been deactivated');
     }
 
@@ -66,7 +62,7 @@ export class AuthService {
     return { user: toSafeUser(user), tokens };
   }
 
-  // ─── OAuth Upsert ───────────────────────────────────────────────────────────
+  // ─── OAuth Upsert
 
   static async oauthUpsert(profile: {
     providerId: string;
@@ -114,7 +110,7 @@ export class AuthService {
     return { user: toSafeUser(user), tokens };
   }
 
-  // ─── Refresh ────────────────────────────────────────────────────────────────
+  // ─── Refresh  ─────
 
   static async refresh(
     refreshToken: string,
@@ -123,7 +119,7 @@ export class AuthService {
     return TokenService.rotateRefreshToken(refreshToken, meta);
   }
 
-  // ─── Logout ─────────────────────────────────────────────────────────────────
+  // ─── Logout  ──────
 
   static async logout(refreshToken: string): Promise<void> {
     await TokenService.revokeRefreshToken(refreshToken);
@@ -154,16 +150,16 @@ export class AuthService {
     await TokenService.revokeAllUserTokens(userId);
   }
 
-  // ─── Get Me ─────────────────────────────────────────────────────────────────
+  // ─── Get Me  ──────
 
   static async getMe(userId: string): Promise<SafeUser> {
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new NotFoundError('User not found');
+    if (!user || !user.isActive) throw new NotFoundError('User not found');
     return toSafeUser(user);
   }
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Helpers  ───────
 
 export interface SafeUser {
   id: string;

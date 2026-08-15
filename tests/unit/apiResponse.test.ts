@@ -1,4 +1,4 @@
-import { sendSuccess, sendCreated, sendError } from '@/utils/apiResponse';
+import { sendCreated, sendError, sendSuccess } from '@/utils/apiResponse';
 
 const mockRes = () => {
   const res: Record<string, jest.Mock> = {};
@@ -27,6 +27,10 @@ describe('apiResponse helpers', () => {
     const res = mockRes();
     sendError(res, 'Not Found', 404);
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ success: false, message: 'Not Found', errors: undefined });
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      message: 'Not Found',
+      errors: undefined,
+    });
   });
 });

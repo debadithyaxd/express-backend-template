@@ -1,10 +1,10 @@
+import { env } from '@/config/env';
+import { prisma } from '@/config/prisma';
+import type { JwtPayload, JwtRefreshPayload, TokenPair } from '@/types';
+import { UnauthorizedError } from '@/utils/AppError';
+import type { Role } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { prisma } from '@/config/prisma';
-import { env } from '@/config/env';
-import { JwtPayload, JwtRefreshPayload, TokenPair } from '@/types';
-import { Role } from '@prisma/client';
-import { UnauthorizedError } from '@/utils/AppError';
 
 export class TokenService {
   /**
@@ -28,11 +28,9 @@ export class TokenService {
     const tokenId = uuidv4();
     const expiresAt = new Date(Date.now() + ms(env.JWT_REFRESH_EXPIRES_IN));
 
-    const token = jwt.sign(
-      { sub: userId, tokenId } as JwtRefreshPayload,
-      env.JWT_REFRESH_SECRET,
-      { expiresIn: env.JWT_REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'] },
-    );
+    const token = jwt.sign({ sub: userId, tokenId } as JwtRefreshPayload, env.JWT_REFRESH_SECRET, {
+      expiresIn: env.JWT_REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+    });
 
     await prisma.refreshToken.create({
       data: {
@@ -89,7 +87,12 @@ export class TokenService {
 
     const record = await prisma.refreshToken.findUnique({ where: { id: payload.tokenId } });
 
-    if (!record || record.revokedAt || record.expiresAt < new Date()) {
+    if (
+      !record ||
+      record.token !== incomingToken ||
+      record.revokedAt ||
+      record.expiresAt < new Date()
+    ) {
       // Possible token reuse — revoke all tokens for this user (security measure)
       if (record) {
         await prisma.refreshToken.updateMany({
@@ -132,15 +135,19 @@ export class TokenService {
   }
 }
 
-/** Parse duration strings like "15m", "7d" into milliseconds */
+/** Parse duration strings like "15m", "7d", "1h" into milliseconds */
 function ms(duration: string): number {
-  const unit = duration.slice(-1);
-  const value = parseInt(duration.slice(0, -1), 10);
+  const match = /^(\d+)(ms|s|m|h|d|w)?$/i.exec(duration.trim());
+  if (!match) return 7 * 86_400_000;
+  const value = Number.parseInt(match[1], 10);
+  const unit = (match[2] ?? 'ms').toLowerCase();
   const map: Record<string, number> = {
+    ms: 1,
     s: 1_000,
     m: 60_000,
     h: 3_600_000,
     d: 86_400_000,
+    w: 604_800_000,
   };
   return value * (map[unit] ?? 1_000);
 }

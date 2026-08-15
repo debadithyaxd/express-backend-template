@@ -1,13 +1,18 @@
-import rateLimit from 'express-rate-limit';
-import { RedisStore } from 'rate-limit-redis';
-import { redis } from '@/config/redis';
 import { env } from '@/config/env';
+import { redis } from '@/config/redis';
+import rateLimit, { type Store } from 'express-rate-limit';
+import { RedisStore } from 'rate-limit-redis';
 
-const makeStore = () =>
-  new RedisStore({
-    sendCommand: (...args: [string, ...string[]]) => redis.call(args[0], ...args.slice(1)) as Promise<number>,
+const makeStore = (): Store | undefined => {
+  if (env.NODE_ENV === 'test') {
+    return undefined; // Use in-memory store during tests
+  }
+  return new RedisStore({
+    // @ts-expect-error ioredis call signature compatibility with rate-limit-redis
+    sendCommand: (...args: string[]) => redis.call(args[0], ...args.slice(1)),
     prefix: 'rl:',
   });
+};
 
 /** General API rate limiter */
 export const apiLimiter = rateLimit({
@@ -15,6 +20,7 @@ export const apiLimiter = rateLimit({
   max: env.RATE_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
+  passOnStoreError: true,
   store: makeStore(),
   message: {
     success: false,
@@ -28,6 +34,7 @@ export const authLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  passOnStoreError: true,
   store: makeStore(),
   message: {
     success: false,

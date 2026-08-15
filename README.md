@@ -6,15 +6,16 @@ Production-ready Express + TypeScript backend with authentication, logging, metr
 
 | Layer | Technology |
 |---|---|
-| Runtime | Node.js 20, TypeScript 5 |
+| Runtime | Node.js 22, TypeScript 7 |
 | Framework | Express 4 |
-| Database | PostgreSQL + Prisma ORM |
+| Database | PostgreSQL + Prisma ORM 7 (`@prisma/adapter-pg`) |
 | Cache / Rate limit | Redis + ioredis |
 | Auth | JWT (access + refresh) + Google OAuth2 (Passport.js) |
 | Validation | Zod |
 | Logging | Winston + Morgan |
 | Metrics | Prometheus (prom-client) + Grafana |
-| Testing | Jest + ts-jest + Supertest |
+| Linter & Formatter | Biome |
+| Testing | Jest + SWC + Supertest |
 | Containerisation | Docker (multi-stage) + docker-compose |
 
 ---
@@ -40,7 +41,7 @@ monitoring/
 ├── prometheus.yml
 └── grafana/        # Auto-provisioned datasource + dashboard
 tests/
-├── unit/           # AppError, validate, asyncHandler, apiResponse
+├── unit/           # AppError, validate, asyncHandler, apiResponse, errorHandler, tokenService
 └── integration/    # Full auth flow via Supertest
 ```
 
@@ -119,17 +120,18 @@ Prometheus scrape endpoint.
 ## Scripts
 
 ```bash
-npm run dev               # Start with hot reload (tsx)
-npm run build             # Compile TypeScript
-npm start                 # Run compiled output
-npm test                  # Run all tests
+npm run dev               # Start TypeScript compiler in watch mode
+npm run build             # Compile TypeScript 7 + resolve module aliases
+npm start                 # Run compiled output (dist/server.js)
+npm test                  # Run tests with Jest + SWC
 npm run test:coverage     # Run tests with coverage report
-npm run lint              # ESLint
-npm run format            # Prettier
+npm run lint              # Biome linting
+npm run format            # Biome formatting
+npm run check             # Biome lint + format check & fix
 npm run prisma:migrate    # Run DB migrations (dev)
 npm run prisma:migrate:prod # Run DB migrations (prod)
 npm run prisma:studio     # Open Prisma Studio
-npm run prisma:seed       # Seed database
+npm run prisma:seed       # Seed database (Admin user)
 ```
 
 ---

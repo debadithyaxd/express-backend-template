@@ -1,10 +1,10 @@
 import {
   AppError,
   BadRequestError,
-  UnauthorizedError,
+  ConflictError,
   ForbiddenError,
   NotFoundError,
-  ConflictError,
+  UnauthorizedError,
 } from '@/utils/AppError';
 
 describe('AppError', () => {

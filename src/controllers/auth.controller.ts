@@ -1,9 +1,9 @@
-import { Request, Response } from 'express';
 import { AuthService } from '@/services/auth.service';
-import { TokenPair } from '@/types';
-import { AuthenticatedRequest } from '@/types';
-import { sendSuccess, sendCreated } from '@/utils/apiResponse';
+import type { TokenPair } from '@/types';
+import type { AuthenticatedRequest } from '@/types';
+import { sendCreated, sendSuccess } from '@/utils/apiResponse';
 import { asyncHandler } from '@/utils/asyncHandler';
+import type { Request, Response } from 'express';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password } = req.body as { name: string; email: string; password: string };
@@ -62,7 +62,7 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
 /** Called after Google OAuth2 callback succeeds */
 export const googleCallback = asyncHandler(async (req: Request, res: Response) => {
   // req.user is set by Passport Google strategy (contains { user, tokens })
-  const { tokens } = req.user as unknown as { tokens: TokenPair };
+  const { user, tokens } = req.user as unknown as { user: unknown; tokens: TokenPair };
   // In a real app you'd redirect to your frontend with tokens in query/cookie
-  sendSuccess(res, { tokens }, 'Google login successful');
+  sendSuccess(res, { user, tokens }, 'Google login successful');
 });

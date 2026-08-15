@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import path from 'node:path';
 import dotenv from 'dotenv';
-import path from 'path';
+import { z } from 'zod';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
@@ -23,9 +23,9 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
   // Google OAuth2
-  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
-  GOOGLE_CLIENT_SECRET: z.string().min(1, 'GOOGLE_CLIENT_SECRET is required'),
-  GOOGLE_CALLBACK_URL: z.string().url('GOOGLE_CALLBACK_URL must be a valid URL'),
+  GOOGLE_CLIENT_ID: z.string().default(''),
+  GOOGLE_CLIENT_SECRET: z.string().default(''),
+  GOOGLE_CALLBACK_URL: z.string().default('http://localhost:3000/api/v1/auth/google/callback'),
 
   // CORS
   CORS_ORIGIN: z.string().default('*'),
@@ -46,9 +46,9 @@ const _parsed = envSchema.safeParse(process.env);
 
 if (!_parsed.success) {
   console.error('❌  Invalid environment variables:\n');
-  _parsed.error.issues.forEach((issue) => {
+  for (const issue of _parsed.error.issues) {
     console.error(`  ${issue.path.join('.')} — ${issue.message}`);
-  });
+  }
   process.exit(1);
 }
 

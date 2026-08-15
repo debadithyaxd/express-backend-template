@@ -1,11 +1,11 @@
-import { Registry, collectDefaultMetrics, Counter, Histogram, Gauge } from 'prom-client';
+import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from 'prom-client';
 
 export const register = new Registry();
 
 // Collect default Node.js metrics (CPU, memory, event loop, etc.)
 collectDefaultMetrics({ register });
 
-// ─── HTTP Metrics ──────────────────────────────────────────────────────────────
+// ─── HTTP Metrics  ───
 
 export const httpRequestCounter = new Counter({
   name: 'http_requests_total',
@@ -38,7 +38,7 @@ export const httpResponseSizeBytes = new Histogram({
   registers: [register],
 });
 
-// ─── Auth Metrics ─────────────────────────────────────────────────────────────
+// ─── Auth Metrics  ──
 
 export const authLoginCounter = new Counter({
   name: 'auth_logins_total',
@@ -54,7 +54,7 @@ export const authTokenRefreshCounter = new Counter({
   registers: [register],
 });
 
-// ─── Active Users ─────────────────────────────────────────────────────────────
+// ─── Active Users  ──
 
 export const activeUsersGauge = new Gauge({
   name: 'active_users_total',

@@ -1,26 +1,26 @@
-import { Router } from 'express';
-import passport from 'passport';
 import * as AuthController from '@/controllers/auth.controller';
-import { validate } from '@/middleware/validate';
 import { authenticate } from '@/middleware/authenticate';
 import { authLimiter } from '@/middleware/rateLimiter';
+import { validate } from '@/middleware/validate';
 import {
-  registerSchema,
+  changePasswordSchema,
   loginSchema,
   refreshTokenSchema,
-  changePasswordSchema,
+  registerSchema,
 } from '@/validators/auth.validator';
+import { Router } from 'express';
+import passport from 'passport';
 
 const router = Router();
 
-// ─── Local Auth ───────────────────────────────────────────────────────────────
+// ─── Local Auth  ────
 router.post('/register', authLimiter, validate(registerSchema), AuthController.register);
 router.post('/login', authLimiter, validate(loginSchema), AuthController.login);
 router.post('/refresh', validate(refreshTokenSchema), AuthController.refresh);
 router.post('/logout', validate(refreshTokenSchema), AuthController.logout);
 router.post('/logout-all', authenticate, AuthController.logoutAll);
 
-// ─── Protected ────────────────────────────────────────────────────────────────
+// ─── Protected  ─────
 router.get('/me', authenticate, AuthController.getMe);
 router.patch(
   '/change-password',
@@ -29,7 +29,7 @@ router.patch(
   AuthController.changePassword,
 );
 
-// ─── Google OAuth2 ────────────────────────────────────────────────────────────
+// ─── Google OAuth2  ─
 router.get(
   '/google',
   passport.authenticate('google', { session: false, scope: ['profile', 'email'] }),

@@ -1,14 +1,42 @@
-import { Request, Response, NextFunction } from 'express';
+import { env } from '@/config/env';
 import { AppError } from '@/utils/AppError';
 import { logger } from '@/utils/logger';
-import { env } from '@/config/env';
+import type { NextFunction, Request, Response } from 'express';
 
 export const errorHandler = (
-  err: Error,
+  err: Error & { status?: number; code?: string; meta?: { target?: string[] } },
   req: Request,
   res: Response,
   _next: NextFunction,
 ): void => {
+  // Handle JSON parsing errors from express.json()
+  if (err instanceof SyntaxError && 'body' in err && err.status === 400) {
+    res.status(400).json({
+      success: false,
+      message: 'Malformed JSON payload in request body',
+    });
+    return;
+  }
+
+  // Handle Prisma known request errors
+  if (err.name === 'PrismaClientKnownRequestError') {
+    if (err.code === 'P2002') {
+      const field = err.meta?.target ? ` on field: ${err.meta.target.join(', ')}` : '';
+      res.status(409).json({
+        success: false,
+        message: `A record with this unique value already exists${field}`,
+      });
+      return;
+    }
+    if (err.code === 'P2025') {
+      res.status(404).json({
+        success: false,
+        message: 'The requested record was not found',
+      });
+      return;
+    }
+  }
+
   // Operational errors (expected, safe to expose message)
   if (err instanceof AppError) {
     logger.warn('Operational error', {
